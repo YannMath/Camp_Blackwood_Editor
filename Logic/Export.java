@@ -8,6 +8,8 @@ import javax.swing.JOptionPane;
 import java.awt.Color;
 import Objects.Tile;
 import Objects.TileGrid;
+import Objects.UI;
+import UI.InterfaceEditorPanel;
 import UI.TilemapEditorPanel;
 
 public class Export {
@@ -41,5 +43,9 @@ public class Export {
     private static String formatColor(Color c) {
         if (c == null) return "DEFAULT ";
         return String.format("(%03d %03d %03d)", c.getRed(), c.getGreen(), c.getBlue());
+    }
+
+    public static void exportInterface(UI gameInterface, InterfaceEditorPanel editor) {
+        // TODO: Add a working export
     }
 }

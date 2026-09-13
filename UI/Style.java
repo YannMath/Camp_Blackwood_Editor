@@ -29,4 +29,33 @@ public class Style {
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
     }
+
+    public static void styleSpinner(JSpinner spinner) {
+        spinner.setFont(DEFAULT_FONT);
+        spinner.setForeground(FOREGROUND);
+        spinner.setBackground(BACKGROUND);
+
+        spinner.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT, 1),
+                BorderFactory.createEmptyBorder(4, 6, 4, 6)
+        ));
+
+        JComponent editor = spinner.getEditor();
+        if (editor instanceof JSpinner.DefaultEditor defaultEditor) {
+            JTextField field = defaultEditor.getTextField();
+            field.setFont(DEFAULT_FONT);
+            field.setForeground(FOREGROUND);
+            field.setBackground(BACKGROUND);
+            field.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        }
+
+        for (Component c : spinner.getComponents()) {
+            if (c instanceof JButton button) {
+                button.setBackground(ACCENT);
+                button.setForeground(Color.WHITE);
+                button.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
+                button.setFocusPainted(false);
+            }
+        }
+    }
 }
