@@ -28,8 +28,16 @@ public class UI {
         }
     }
 
+    public void removeInfoArea(String name) {
+        infoMap.remove(name);
+        currentInfoAreas.remove(name);
+    }
+
+    public void setTmName(String tmName) {this.tmName = tmName;}
+
     public String getTmName() {return tmName;}
     public List<String> getInfoAreas() {return currentInfoAreas;}
+    public List<Coordinate> getCoordinates(String name) {return infoMap.getOrDefault(name, List.of());}
     public int getX_offset() {return x_offset;}
     public int getY_offset() {return y_offset;}
 }
