@@ -3,6 +3,7 @@ package Logic;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.JFileChooser;
@@ -57,6 +58,7 @@ public class Export {
         sb.append("[INFORMATION]\n");
         for (String info : gameInterface.getInfoAreas()) {
             List<Coordinate> coords = gameInterface.getCoordinates(info);
+            coords.sort(Comparator.comparing(Coordinate::getX));
             String[] coordinateStrings = new String[coords.size()];
             for (int i = 0; i < coords.size(); i++) {
                 if (i != 0)
