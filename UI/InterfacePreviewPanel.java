@@ -103,20 +103,17 @@ public class InterfacePreviewPanel extends JPanel {
     }
 
     public void addSelection(List<Coordinate> infoFieldCoordinates) {
-        Tile[][] tiles = board.getTiles();
         for (Coordinate c : infoFieldCoordinates) {
-            highlight(tiles[c.getY()][c.getX()]);
+            highlighted.add(new Coordinate(c.getX(), c.getY()));
         }
-    }
-
-    private void highlight(Tile t) {
-        highlighted.add(new Coordinate(t.getX(), t.getY()));
+        repaint();
     }
 
     public void removeHighlight(Set<Coordinate> coordinates) {
         for (Coordinate c : coordinates) {
             highlighted.remove(c);
         }
+        repaint();
     }
 
     public void importToBoard(Tilemap tm) {

@@ -30,6 +30,7 @@ public class InterfaceEditorPanel extends Editor<UI> {
     private JPanel editorPanel = new JPanel(new GridLayout(0, 1));
     private JButton saveInfoAreaButton = new JButton("Save information area");
     private JButton pathButton = new JButton("Change directory");
+    private JButton importButton = new JButton("Import a .ui file");
     private JButton exportButton = new JButton("Export as .ui");
     private JTextField infoAreaNameField = new JTextField("");
     private JTextField nameField = new JTextField("");
@@ -78,9 +79,10 @@ public class InterfaceEditorPanel extends Editor<UI> {
         });
         saveInfoAreaButton.addActionListener(e -> {
             if (names.contains(editingAreaName)) {JOptionPane.showMessageDialog(this, "Name already exists"); return;}
-            addInfoSection(editingAreaName);
-            gameInterface.addInfoArea(editingAreaName, new ArrayList<>(pendingSelection));
-            previewPanel.addSelection(new ArrayList<>(pendingSelection));
+            Set<Coordinate> savedSelection = new HashSet<>(pendingSelection);
+            addInfoSection(editingAreaName, savedSelection);
+            gameInterface.addInfoArea(editingAreaName, new ArrayList<>(savedSelection));
+            previewPanel.addSelection(new ArrayList<>(savedSelection));
             pendingSelection.clear();
             infoAreaNameField.setText("");
 
@@ -96,6 +98,7 @@ public class InterfaceEditorPanel extends Editor<UI> {
             );
             updatePath();
         });
+        importButton.addActionListener(e -> {load(object);});
         exportButton.addActionListener(e -> {
             gameInterface.setTmName(nameField.getText().trim());
             gameInterface.setX_offset((int) x_offsetSpinner.getValue());
@@ -114,6 +117,7 @@ public class InterfaceEditorPanel extends Editor<UI> {
         Style.stylePanel(editorPanel);
         Style.styleButton(saveInfoAreaButton);
         Style.styleButton(pathButton);
+        Style.styleButton(importButton);
         Style.styleButton(exportButton);
         Style.styleTextField(infoAreaNameField);
         Style.styleTextField(nameField);
@@ -129,24 +133,26 @@ public class InterfaceEditorPanel extends Editor<UI> {
         editorPanel.add(nameField);
         editorPanel.add(x_offsetSpinner);
         editorPanel.add(y_offsetSpinner);
+        editorPanel.add(importButton);
         editorPanel.add(exportButton);
         add(previewPanel, BorderLayout.CENTER);
         add(infoFieldPanel, BorderLayout.WEST);
         add(editorPanel, BorderLayout.EAST);
     }
 
-    private void addInfoSection(String name) {
+    private void addInfoSection(String name, Set<Coordinate> infoAreaCoordinates) {
         JPanel row = new JPanel();
         JTextField textField = new JTextField(name);
         JButton removeButton = new JButton("X");
 
         names.add(name);
 
-        Set<Coordinate> infoAreaCoordinates = new HashSet<>();
-
         removeButton.addActionListener(e -> {
             gameInterface.removeInfoArea(name);
             previewPanel.removeHighlight(infoAreaCoordinates);
+            previewPanel.revalidate();
+            previewPanel.repaint();
+            names.remove(names.indexOf(name));
 
             infoFieldOverviewPanel.remove(row);
             infoFieldOverviewPanel.revalidate();
@@ -218,6 +224,18 @@ public class InterfaceEditorPanel extends Editor<UI> {
         super.object = object;
         try {
             this.gameInterface = Import.loadInterface();
+            if (gameInterface == null) {
+                return;
+            }
+
+            this.nameField.setText(gameInterface.getTmName());
+            updatePreview();
+            for (String infoArea: gameInterface.getInfoAreas()) {
+                addInfoSection(infoArea, new HashSet<>(gameInterface.getCoordinates(infoArea)));
+                previewPanel.addSelection(new ArrayList<>(gameInterface.getCoordinates(infoArea)));
+            }
+            revalidate();
+            repaint();
         } catch (IOException e) {
             throw new RuntimeException("Failed to load interface", e);
         }
