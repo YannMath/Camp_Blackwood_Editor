@@ -34,6 +34,8 @@ public class UI {
     }
 
     public void setTmName(String tmName) {this.tmName = tmName;}
+    public void setX_offset(int x_offset) {this.x_offset = x_offset;}
+    public void setY_offset(int y_offset) {this.y_offset = y_offset;}
 
     public String getTmName() {return tmName;}
     public List<String> getInfoAreas() {return currentInfoAreas;}

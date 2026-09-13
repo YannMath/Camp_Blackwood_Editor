@@ -1,29 +1,27 @@
 package UI;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.List;
 import Objects.Coordinate;
 import Objects.Tile;
 import Objects.TileGrid;
 import Objects.Tilemap;
 
 public class InterfacePreviewPanel extends JPanel {
+    private final InterfaceEditorPanel parentPanel;
     private static final String CELL_FONT_NAME = Font.MONOSPACED;
-    private Tilemap spriteMap;                       
-    private Map<String, Set<Coordinate>> committedAreas; 
-    private Set<Coordinate> pendingSelection = new HashSet<>(); 
-    private Map<String, Color> areaColors = new HashMap<>();
+    Set<Coordinate> highlighted = new HashSet<>();
 
     private TileGrid board;
     private int rows;
     private int cols;
 
-    public InterfacePreviewPanel() {
+    public InterfacePreviewPanel(InterfaceEditorPanel parentPanel) {
+        this.parentPanel = parentPanel;
         setPreferredSize(new Dimension(600, 600));
 
         addMouseListener(new MouseAdapter() {
@@ -33,6 +31,7 @@ public class InterfacePreviewPanel extends JPanel {
                 int row = e.getY();
 
                 Tile t = getTileAt(col, row);
+                if (t != null) parentPanel.receive(t.getX(), t.getY());
             }
         });
 
@@ -41,7 +40,9 @@ public class InterfacePreviewPanel extends JPanel {
             public void mouseDragged(MouseEvent e) {
                 int col = e.getX();
                 int row = e.getY();
+
                 Tile t = getTileAt(col, row);
+                if (t != null) parentPanel.receive(t.getX(), t.getY());
             }
         });
     }
@@ -49,6 +50,7 @@ public class InterfacePreviewPanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g); // Important! Else there will be Rendering-artifacts
+        Set<Coordinate> pendingSelection = parentPanel.getPendingSelection();
         if (board == null || cols == 0 || rows == 0) return;
 
         int cellH = Math.max(1, getHeight() / rows);
@@ -67,7 +69,14 @@ public class InterfacePreviewPanel extends JPanel {
                 int actualCellH = nextY - y;
 
                 // Background
-                g.setColor(t.getBG() != null ? t.getBG() : Color.LIGHT_GRAY); // Fallback for the Editor-Grid
+                Color bg = t.getBG() != null ? t.getBG() : Color.LIGHT_GRAY;
+                if (highlighted.contains(new Coordinate(c, r))) {
+                    bg = blend(bg, Color.YELLOW, 0.5f); 
+                }
+                else if (pendingSelection.contains(new Coordinate(c, r))) {
+                    bg = blend(bg, Color.GREEN, 0.5f);
+                }
+                g.setColor(bg);
                 g.fillRect(x, y, cellW, actualCellH);
 
                 g.setColor(Color.GRAY);
@@ -80,6 +89,33 @@ public class InterfacePreviewPanel extends JPanel {
                 int textY = y + (actualCellH - fm.getHeight()) / 2 + fm.getAscent();
                 g.drawString(s, textX, textY);
             }
+        }
+    }
+
+    private Color blend(Color base, Color overlay, float ratio) {
+        ratio = Math.max(0f, Math.min(1f, ratio));
+
+        int r = (int) (base.getRed()   * (1 - ratio) + overlay.getRed()   * ratio);
+        int g = (int) (base.getGreen() * (1 - ratio) + overlay.getGreen() * ratio);
+        int b = (int) (base.getBlue()  * (1 - ratio) + overlay.getBlue()  * ratio);
+
+        return new Color(r, g, b);
+    }
+
+    public void addSelection(List<Coordinate> infoFieldCoordinates) {
+        Tile[][] tiles = board.getTiles();
+        for (Coordinate c : infoFieldCoordinates) {
+            highlight(tiles[c.getY()][c.getX()]);
+        }
+    }
+
+    private void highlight(Tile t) {
+        highlighted.add(new Coordinate(t.getX(), t.getY()));
+    }
+
+    public void removeHighlight(Set<Coordinate> coordinates) {
+        for (Coordinate c : coordinates) {
+            highlighted.remove(c);
         }
     }
 
@@ -122,7 +158,10 @@ public class InterfacePreviewPanel extends JPanel {
         int col = mouseX / cellW;
         int row = mouseY * rows / Math.max(1, getHeight());
         if (row < 0 || row >= rows || col < 0 || col >= cols) return null;
-        return board.getTiles()[row][col];
+        Tile t = board.getTiles()[row][col];
+        t.setX(col);
+        t.setY(row);
+        return t;
     }
 
     public void refreshBoard() {
@@ -138,8 +177,4 @@ public class InterfacePreviewPanel extends JPanel {
         }
         repaint();
     }
-
-    public void setSpriteMap(Tilemap tm) { this.spriteMap = tm; repaint(); }
-    public void setCommittedAreas(Map<String, Set<Coordinate>> areas) { this.committedAreas = areas; repaint(); }
-    public void setPendingSelection(Set<Coordinate> sel) { this.pendingSelection = sel; repaint(); }
 }

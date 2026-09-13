@@ -47,5 +47,9 @@ public class Export {
 
     public static void exportInterface(UI gameInterface, InterfaceEditorPanel editor) {
         // TODO: Add a working export
+        System.out.println("Exportet interface with:");
+        System.out.println("[SPRITE] " + gameInterface.getTmName());
+        System.out.println("[Infos] " + gameInterface.getInfoAreas());
+        System.out.println("[OFFSET] (" + gameInterface.getX_offset() + "/" + gameInterface.getY_offset() + ")");
     }
 }
